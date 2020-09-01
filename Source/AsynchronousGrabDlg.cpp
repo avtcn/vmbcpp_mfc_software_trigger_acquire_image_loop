@@ -88,6 +88,9 @@ BOOL CAsynchronousGrabDlg::OnInitDialog()
         Log( strMsg.str() );
     }
 
+    CButton* m_ctlCheck1 = (CButton*)GetDlgItem(IDC_CHECK_SHOW_IMAGE_EACH_CAPTURE);
+    m_ctlCheck1->SetCheck(1);
+    
     return TRUE;
 }
 
@@ -676,6 +679,11 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSyncAcquireImg()
     ticksEnd = GetTickCount();
     double fps = m_nClickCount *1.0 / ((ticksEnd - ticksStart) / 1000);
 
+    
+    bool bCheckedShow = false;// GetDlgItemInt(IDC_CHECK_SHOW_IMAGE_EACH_CAPTURE, NULL, 1);  //若看做有符号数，则bSigned为1，返回值直接以int类型去接收
+
+    CButton* m_ctlCheck1 = (CButton*)GetDlgItem(IDC_CHECK_SHOW_IMAGE_EACH_CAPTURE);
+    bCheckedShow = (m_ctlCheck1->GetCheck() == 1) ? true : false;
 
     // See if it is not corrupt
     if (VmbErrorSuccess == err)
@@ -688,7 +696,8 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSyncAcquireImg()
         err = pFrame->GetFrameID(iFrameID);
         Log(_TEXT("Image received. "), m_nClickCount, m_nErrorCount, fps);
 
-        if (VmbErrorSuccess == err)
+        
+        if (bCheckedShow && VmbErrorSuccess == err)
         {
             VmbUint32_t nSize;
             err = pFrame->GetImageSize(nSize);

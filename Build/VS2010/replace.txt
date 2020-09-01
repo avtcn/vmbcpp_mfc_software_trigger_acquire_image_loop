@@ -1,0 +1,34 @@
+C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Build\VS2010
+
+1. 
+<Import Project="..\..\..\..\Build\VS2010\Examples.props" />
+<Import Project="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Build\VS2010\Examples.props" /> 
+
+<Import Project="..\..\..\..\Build\VS2010\ImageTransform.props" />
+<Import Project="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Build\VS2010\ImageTransform.props" />
+
+
+
+
+
+
+
+
+
+
+2.
+<AdditionalIncludeDirectories>..\..\Source;..\..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+<AdditionalIncludeDirectories>..\..\Source;C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+
+
+3.
+<ClInclude Include="..\..\..\..\Common\ErrorCodeToMessage.h" />
+<ClInclude Include="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Common\ErrorCodeToMessage.h" /> 
+
+<ClInclude Include="..\..\..\..\Common\StreamSystemInfo.h" />
+<ClInclude Include="C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Common\StreamSystemInfo.h" />
+
+
+sed -i -e 's/few/asd/g' hello.txt
+
+sed -i -e 's/..\..\..\..\Build\VS2010\/C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\Build\VS2010\/g' hello.txt

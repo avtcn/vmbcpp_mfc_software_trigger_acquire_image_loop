@@ -90,6 +90,8 @@ BEGIN
     PUSHBUTTON      "Close Camera",IDC_BUTTON_CLOSE_CAM_SYNC,7,313,144,14
     PUSHBUTTON      "Acquire Image",IDC_BUTTON_SYNC_ACQUIRE_IMG,7,279,144,14
     PUSHBUTTON      "Acquire Image Auto",IDC_BUTTON_ACQUIRE_IMG_AUTO,7,296,144,14
+    CONTROL         "Show image for each capturing",IDC_CHECK_SHOW_IMAGE_EACH_CAPTURE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,230,144,14
 END
 
 
