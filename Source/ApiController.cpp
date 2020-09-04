@@ -162,6 +162,19 @@ VmbErrorType ApiController::StartCamera(const std::string &rStrCameraID, int typ
             }
         }
 
+        // For Alvium USB, only LevelHigh trigger mode works well.
+        FeaturePtr pFeature;
+        if (m_pCamera->GetFeatureByName("DeviceFamilyName", pFeature) == VmbErrorSuccess)
+        {
+            std::string sDeviceFamilyName = "";
+            pFeature->GetValue(sDeviceFamilyName);
+            if (sDeviceFamilyName == "ALVIUM")
+            {
+                if (m_pCamera->GetFeatureByName("TriggerActivation", pFeature) == VmbErrorSuccess)
+                    pFeature->SetValue("LevelHigh");
+            }
+        }
+
 		
         // Save the current width
         res = GetFeatureIntValue( m_pCamera, "Width", m_nWidth );
@@ -241,6 +254,20 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
                 } while (false == bIsCommandDone);
             }
         }
+
+        // For Alvium USB, only LevelHigh trigger mode works well.
+        FeaturePtr pFeature;
+        if (m_pCamera->GetFeatureByName("DeviceFamilyName", pFeature) == VmbErrorSuccess)
+        {
+            std::string sDeviceFamilyName = "";
+            pFeature->GetValue(sDeviceFamilyName);
+            if (sDeviceFamilyName == "ALVIUM")
+            {
+                if (m_pCamera->GetFeatureByName("TriggerActivation", pFeature) == VmbErrorSuccess)
+                    pFeature->SetValue("LevelHigh");
+            }
+        }
+
 
         // Software Trigger mode
         if (type == 1)
