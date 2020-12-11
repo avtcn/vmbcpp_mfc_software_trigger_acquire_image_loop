@@ -386,8 +386,12 @@ void CAsynchronousGrabDlg::Log(string_type strMsg, long nClickCount, long nError
 
 void CAsynchronousGrabDlg::Log(string_type strMsg, long nClickCount, long nErrorCount, double fps)
 {
-    strMsg += _TEXT("..., Click: ") + std::to_wstring(nClickCount) + _TEXT(", Error: ") + std::to_wstring(nErrorCount) + _TEXT(", FPS: ") + std::to_wstring(fps);
+    strMsg += _TEXT("..., Click: ") + std::to_wstring(nClickCount) + _TEXT(", Error: ") + std::to_wstring(nErrorCount) 
+        + _TEXT(", FPS: ") + std::to_wstring(fps) 
+        + _TEXT(", Gap in ms: ") + std::to_wstring(1000.0/fps) 
+        ;
     m_ListLog.InsertString(0, strMsg.c_str());
+    OutputDebugString((strMsg.append(_TEXT("\n"))).c_str());
 }
 
 
