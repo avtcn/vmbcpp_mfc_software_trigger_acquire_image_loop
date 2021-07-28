@@ -99,8 +99,13 @@ void CAsynchronousGrabDlg::OnSysCommand( UINT nID, LPARAM lParam )
     if( SC_CLOSE == nID )
     {
         // if we are streaming stop streaming
-        if( true == m_bIsStreaming )
+        if (true == m_bIsStreaming) {
+
+
             OnBnClickedButtonStartstop();
+
+        }
+
 
         // Before we close the application we stop Vimba
         m_ApiController.ShutDown();
@@ -121,9 +126,11 @@ void CAsynchronousGrabDlg::OnBnClickedButtonStartstop()
             // Start acquisition
             err = m_ApiController.StartContinuousImageAcquisition( m_cameras[nRow] );
             // Set up image for MFC picture box
-            if (    VmbErrorSuccess == err
-                 && NULL == m_Image )
+            if (    VmbErrorSuccess == err )
+                 //&& NULL == m_Image )
             {
+                m_Image.Destroy();
+
                 m_Image.Create(  m_ApiController.GetWidth(),
                                 -m_ApiController.GetHeight(),
                                 NUM_COLORS * BIT_DEPTH );
@@ -142,7 +149,6 @@ void CAsynchronousGrabDlg::OnBnClickedButtonStartstop()
         m_bIsStreaming = false;
         // Stop acquisition
         err = m_ApiController.StopContinuousImageAcquisition();
-        m_ApiController.ClearFrameQueue();
         if( NULL != m_Image )
         {
             m_Image.Destroy();
@@ -175,12 +181,7 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
     if( true == m_bIsStreaming )
     {
         // Pick up frame
-        FramePtr pFrame = m_ApiController.GetFrame();
-        if( SP_ISNULL( pFrame) )
-        {
-            Log( _TEXT("frame ptr is NULL, late call") );
-            return 0;
-        }
+        bool ret = m_ApiController.GetCImage(&m_Image);
 
 		// The waiting frame is coming now ...
 		m_bWaitingFrame = false;
@@ -190,36 +191,21 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
         {
             VmbUchar_t *pBuffer;
             VmbUchar_t *pColorBuffer = NULL;
-			VmbUint64_t iFrameID = 0;
+            VmbUint64_t iFrameID = lParam;
+            Log(_TEXT("Received image, frame id "), iFrameID);
 
-            VmbErrorType err = pFrame->GetImage( pBuffer );
-			err = pFrame->GetFrameID(iFrameID);
-            Log( _TEXT( "Received image, frame id " ), iFrameID);
-
-            if( VmbErrorSuccess == err )
-            {
-                VmbUint32_t nSize;
-                err = pFrame->GetImageSize( nSize );
-                if( VmbErrorSuccess == err )
-                {
-                    VmbPixelFormatType ePixelFormat = m_ApiController.GetPixelFormat();
-                    CopyToImage( pBuffer,ePixelFormat, m_Image );
-                    // Display it
-                    RECT rect;
-                    m_PictureBoxStream.GetWindowRect( &rect );
-                    ScreenToClient( &rect );
-                    InvalidateRect( &rect, false );
-                }
-            }
+            // Display it
+            RECT rect;
+            m_PictureBoxStream.GetWindowRect(&rect);
+            ScreenToClient(&rect);
+            InvalidateRect(&rect, false);
         }
         else
         {
             // If we receive an incomplete image we do nothing but logging
             Log( _TEXT( "Failure in receiving image" ), VmbErrorOther );
-        }
-
-        // And queue it to continue streaming
-        m_ApiController.QueueFrame( pFrame );
+        } 
+        
     }
 
     return 0;
@@ -511,9 +497,14 @@ void CAsynchronousGrabDlg::OnBnClickedButtonOpenCamera()
     else
     {
         m_bIsStreaming = false;
+
+        if (m_CaptureTimer != 0) {
+            KillTimer(m_CaptureTimer);
+            m_CaptureTimer = 0;
+        } 
+
         // Stop acquisition
         err = m_ApiController.StopContinuousImageAcquisition();
-        m_ApiController.ClearFrameQueue();
         if( NULL != m_Image )
         {
             m_Image.Destroy();
@@ -534,16 +525,17 @@ void CAsynchronousGrabDlg::OnBnClickedButtonOpenCamera()
 
 void CAsynchronousGrabDlg::OnBnClickedButtonSwTrigger()
 {
+    /*
 	if (m_bWaitingFrame)
 	{ 
 		Log(_TEXT("WARNING: still waiting for new frame ..."));
 		return;
-	}
+	}*/
 	
 	m_bWaitingFrame = true;
 
 	m_ApiController.TriggerSoftwareCapture();
-	string_type strMsg = _TEXT("Emit software trigger command to camera ...");
+	string_type strMsg = _TEXT("Emit software trigger command to camera ..., m_nClickCount == ");
 	Log(strMsg + std::to_wstring(m_nClickCount));
 
 	// Increase count
@@ -556,7 +548,7 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSwTriggerAuto()
 { 
 	if (m_CaptureTimer == 0) {
 		Log(_TEXT("Start software trigger automatically ...")); 
-		m_CaptureTimer = SetTimer(1, 200, NULL); // one event every 1000 ms = 1 s 
+		m_CaptureTimer = SetTimer(1, 1000, NULL); // one event every 1000 ms = 1 s 
 		m_BtnSWTriggerAuto.SetWindowText(_TEXT("Stop SW Trigger Auto"));
 	} 
 	else
@@ -579,7 +571,7 @@ void CAsynchronousGrabDlg::OnTimer(UINT_PTR nIDEvent)
     {
 
         // TODO: 在此添加消息处理程序代码和/或调用默认值
-        Log(_TEXT("Timer Event ..."));
+        Log(_TEXT("Timer Event 1 ..."));
         OnBnClickedButtonSwTrigger();
     }
 
@@ -596,7 +588,7 @@ void CAsynchronousGrabDlg::OnTimer(UINT_PTR nIDEvent)
 void CAsynchronousGrabDlg::OnTimer2(UINT_PTR nIDEvent)
 {
     // TODO: 在此添加消息处理程序代码和/或调用默认值
-    Log(_TEXT("Timer Event ..."));
+    Log(_TEXT("Timer Event 2..."));
     OnBnClickedButtonSwTrigger();
 
     CDialog::OnTimer(nIDEvent);

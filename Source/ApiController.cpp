@@ -303,7 +303,7 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
                 if (VmbErrorSuccess == res)
                 {
                     // Create a frame observer for this camera (This will be wrapped in a shared_ptr so we don't delete it)
-                    SP_SET(m_pFrameObserver, new FrameObserver(m_pCamera));
+                    SP_SET(m_pFrameObserver, new FrameObserver(m_pCamera, m_nPixelFormat, m_nWidth, m_nHeight));
                     // Start streaming
                     res = SP_ACCESS(m_pCamera)->StartContinuousImageAcquisition(NUM_FRAMES, m_pFrameObserver);
                 }
@@ -414,18 +414,12 @@ VmbPixelFormatType ApiController::GetPixelFormat()
 // Returns:
 //  A frame shared pointer
 //
-FramePtr ApiController::GetFrame()
+bool ApiController::GetCImage( CImage* pOutImage) 
 {
-    return SP_DYN_CAST( m_pFrameObserver,FrameObserver )->GetFrame();
+    return SP_DYN_CAST(m_pFrameObserver, FrameObserver)->GetCImage(pOutImage);
 }
 
-//
-// Clears all remaining frames that have not been picked up
-//
-void ApiController::ClearFrameQueue()
-{
-    SP_DYN_CAST( m_pFrameObserver,FrameObserver )->ClearFrameQueue();
-}
+
 
 //
 // Queues a given frame to be filled by the API

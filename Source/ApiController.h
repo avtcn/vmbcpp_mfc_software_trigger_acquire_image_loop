@@ -148,7 +148,9 @@ class ApiController
     // Returns:
     //  A frame shared pointer
     //
-    FramePtr            GetFrame();
+    //FramePtr            GetFrame();
+
+    bool GetCImage(CImage* pOutImage);
 
     //
     // Queues a given frame to be filled by the API
@@ -160,11 +162,6 @@ class ApiController
     //  An API status code
     //    
     VmbErrorType        QueueFrame( FramePtr pFrame );
-
-    //
-    // Clears all remaining frames that have not been picked up
-    //
-    void                ClearFrameQueue();
 
     //
     // Translates Vimba error codes to readable error messages

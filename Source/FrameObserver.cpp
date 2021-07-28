@@ -28,6 +28,7 @@
 
 #include <afxwin.h>
 #include <FrameObserver.h>
+#include "VmbTransform.h"
 
 namespace AVT {
 namespace VmbAPI {
@@ -45,32 +46,68 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
     bool bQueueDirectly = true;
     VmbFrameStatusType eReceiveStatus;
 
-    if( VmbErrorSuccess == pFrame->GetReceiveStatus( eReceiveStatus ) )
+    CWinApp* pApp = AfxGetApp();
+    CWnd* pMainWin = NULL;
+    if (NULL != pApp)
     {
-        CWinApp *pApp = AfxGetApp();
-        if( NULL != pApp )
+        pMainWin = pApp->GetMainWnd();
+        if (NULL != pMainWin)
         {
-            CWnd *pMainWin = pApp->GetMainWnd();
-            if( NULL != pMainWin )
-            {
-                // Lock the frame queue
-                m_FramesMutex.Lock();
-                // We store the FramePtr
-                m_Frames.push( pFrame );
-                // Unlock frame queue
-                m_FramesMutex.Unlock();
-                // And notify the view about it
-                pMainWin->PostMessage( WM_FRAME_READY, eReceiveStatus );
-                bQueueDirectly = false;
-            }
         }
     }
 
-    // If any error occurred we queue the frame without notification
-    if( true == bQueueDirectly )
+    if( VmbErrorSuccess == pFrame->GetReceiveStatus( eReceiveStatus ) )
     {
-        m_pCamera->QueueFrame( pFrame );
+        VmbUint64_t iFrameID = 0;
+        VmbUchar_t* pBuffer;
+        VmbUchar_t* pColorBuffer = NULL;
+        VmbErrorType err = pFrame->GetImage(pBuffer);
+
+        err = pFrame->GetFrameID(iFrameID);
+        if (err != VmbErrorSuccess)
+            iFrameID = 0;
+
+        VmbUint32_t nSize;
+        err = pFrame->GetImageSize(nSize);
+
+        // Lock the frame queue
+        m_FramesMutex.Lock();
+
+        m_FrameID = iFrameID;
+
+        // Convert mono to bgr if necessary
+        if (VmbPixelFormatMono8 == m_nPixelFormat)
+        {
+            pColorBuffer = new VmbUchar_t[nSize * NUM_COLORS];
+            MonoToBGR(pBuffer, pColorBuffer, nSize);
+            pBuffer = pColorBuffer;
+        } 
+        // Copy it
+        // We need that because MFC might repaint the view after we have released the frame already
+        CopyToImage(pBuffer, &m_Image);
+
+        if (NULL != pColorBuffer)
+        {
+            delete[] pColorBuffer;
+            pColorBuffer = NULL;
+        } 
+
+
+        // Unlock frame queue
+        m_FramesMutex.Unlock();
+
+        // And notify the view about it
+        if(pMainWin)
+            pMainWin->PostMessage(WM_FRAME_READY, eReceiveStatus, m_FrameID);
     }
+    else {
+        m_FrameID = 0;
+        // And notify the view about it
+        if (pMainWin)
+            pMainWin->PostMessage(WM_FRAME_READY, eReceiveStatus, m_FrameID);
+    }
+
+    m_pCamera->QueueFrame(pFrame);
 }
 
 //
@@ -80,6 +117,7 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
 // Returns:
 //  A shared pointer to the latest frame
 //
+/*
 FramePtr FrameObserver::GetFrame()
 {
     // Lock frame queue
@@ -95,19 +133,84 @@ FramePtr FrameObserver::GetFrame()
     m_FramesMutex.Unlock();
     return res;
 }
+*/
 
-//
-// Clears the internal (double buffering) frame queue
-//
-void FrameObserver::ClearFrameQueue()
+bool FrameObserver::GetCImage(CImage* pOutImage)
 {
-    // Lock the frame queue
+    // Lock frame queue
     m_FramesMutex.Lock();
-    // Clear the frame queue and release the memory
-    std::queue<FramePtr> empty;
-    std::swap( m_Frames, empty );
+
+    //newImage = m_Image;
+    // https://stackoverflow.com/questions/9571304/how-to-copy-a-cimage-object
+    m_Image.BitBlt(pOutImage->GetDC(), 0, 0); 
+
     // Unlock the frame queue
     m_FramesMutex.Unlock();
+
+    return true;
 }
+
+
+//
+// Copies the content of a byte buffer to a MFC image with respect to the image's alignment
+//
+// Parameters:
+//  [in]    pInbuffer       The byte buffer as received from the cam
+//  [out]   OutImage        The filled MFC image
+//
+void FrameObserver::CopyToImage(VmbUchar_t* pInBuffer, CImage* pOutImage)
+{
+    if (NULL != *pOutImage)
+    {
+        VmbUchar_t* pCursor = (VmbUchar_t*)pOutImage->GetBits();
+        int             nHeight = m_nHeight;
+        int             nWidth = m_nWidth * NUM_COLORS;
+        int             nStride = pOutImage->GetPitch() - nWidth;
+
+        if (0 < nStride)
+        {
+            for (int y = 0; y < nHeight; ++y)
+            {
+                for (int x = 0; x < nWidth; ++x)
+                {
+                    *pCursor = *pInBuffer;
+                    ++pCursor;
+                    ++pInBuffer;
+                }
+                // Consider stride
+                pCursor += nStride;
+            }
+        }
+        else
+        {
+            memcpy(pOutImage->GetBits(), pInBuffer, nWidth * nHeight);
+        }
+    }
+}
+
+
+//
+// Converts mono 8 bit to mono bgr
+//
+// Parameters:
+//  [in]    pInBuffer       The input mono 8 byte buffer to convert
+//  [out]   pOutBuffer      The output bgr byte buffer
+//  [in]    nInSize         The size of the input buffer
+//
+void FrameObserver::MonoToBGR(VmbUchar_t* pInBuffer, VmbUchar_t* pOutBuffer, VmbUint32_t nInSize)
+{
+    while (0 < nInSize--)
+    {
+        for (int i = 0; i < NUM_COLORS; ++i)
+        {
+            *pOutBuffer = *pInBuffer;
+            ++pOutBuffer;
+        }
+
+        ++pInBuffer;
+    }
+}
+
+
 
 }}} // namespace AVT::VmbAPI::Examples

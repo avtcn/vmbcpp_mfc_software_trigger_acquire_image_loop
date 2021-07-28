@@ -31,6 +31,7 @@
 
 #include <queue>
 #include <VimbaCPP/Include/VimbaCPP.h>
+#include <atlimage.h>
 
 namespace AVT {
 namespace VmbAPI {
@@ -38,47 +39,71 @@ namespace Examples {
 
 #define WM_FRAME_READY WM_USER + 1
 
-class FrameObserver : virtual public IFrameObserver
-{
-  public:
-    //
-    // We pass the camera that will deliver the frames to the constructor
-    //
-    // Parameters:
-    //  [in]    pCamera             The camera the frame was queued at
-    //
-    FrameObserver( CameraPtr pCamera ) : IFrameObserver( pCamera ) {;}
-    
-    //
-    // This is our callback routine that will be executed on every received frame.
-    // Triggered by the API.
-    //
-    // Parameters:
-    //  [in]    pFrame          The frame returned from the API
-    //
-    virtual void FrameReceived( const FramePtr pFrame );
+#define NUM_COLORS 3
+#define BIT_DEPTH 8
 
-    //
-    // After the view has been notified about a new frame it can pick it up.
-    // It is then removed from the internal queue
-    //
-    // Returns:
-    //  A shared pointer to the latest frame
-    //
-    FramePtr GetFrame();
+    class FrameObserver : virtual public IFrameObserver
+    {
+    public:
+        //
+        // We pass the camera that will deliver the frames to the constructor
+        //
+        // Parameters:
+        //  [in]    pCamera             The camera the frame was queued at
+        //
+        FrameObserver(CameraPtr pCamera, VmbInt64_t nPixelFormat, VmbInt64_t nWidth, VmbInt64_t nHeight) 
+            : IFrameObserver(pCamera), m_nPixelFormat(nPixelFormat), m_nWidth(nWidth), m_nHeight(nHeight) { 
 
-    //
-    // Clears the internal (double buffering) frame queue
-    //
-    void ClearFrameQueue();
+            m_Image.Create(m_nWidth, -m_nHeight, NUM_COLORS * BIT_DEPTH);
 
-  private:
-    // Since a MFC message cannot contain a whole frame
-    // the frame observer stores all FramePtr
-    std::queue<FramePtr> m_Frames;
-    AVT::VmbAPI::Mutex m_FramesMutex;
-};
+        }
 
-}}} // namespace AVT::VmbAPI::Examples
+        //
+        // This is our callback routine that will be executed on every received frame.
+        // Triggered by the API.
+        //
+        // Parameters:
+        //  [in]    pFrame          The frame returned from the API
+        //
+        virtual void FrameReceived(const FramePtr pFrame);
+
+        //
+        // After the view has been notified about a new frame it can pick it up.
+        // It is then removed from the internal queue
+        //
+        // Returns:
+        //  A shared pointer to the latest frame
+        //
+        //FramePtr GetFrame();
+        bool GetCImage(CImage* pOutImage);
+
+        //
+        // Clears the internal (double buffering) frame queue
+        //
+        //void ClearFrameQueue();
+
+    private:
+        // Since a MFC message cannot contain a whole frame
+        // the frame observer stores all FramePtr
+        //std::queue<FramePtr> m_Frames;
+        AVT::VmbAPI::Mutex m_FramesMutex;
+        // Our MFC image to display
+
+        VmbInt64_t m_nPixelFormat;
+        // The current width
+        VmbInt64_t m_nWidth;
+        // The current height
+        VmbInt64_t m_nHeight;
+
+        CImage m_Image;
+        unsigned long m_FrameID;
+
+        void CopyToImage(VmbUchar_t* pInBuffer, CImage* pOutImage);
+        void MonoToBGR(VmbUchar_t* pInBuffer, VmbUchar_t* pOutBuffer, VmbUint32_t nInSize);
+    };
+
+}
+}
+} // namespace AVT::VmbAPI::Examples
 
 #endif
