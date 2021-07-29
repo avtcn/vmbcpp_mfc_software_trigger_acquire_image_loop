@@ -126,22 +126,17 @@ void CAsynchronousGrabDlg::OnBnClickedButtonStartstop()
             // Start acquisition
             err = m_ApiController.StartContinuousImageAcquisition( m_cameras[nRow] );
             // Set up image for MFC picture box
-            if (    VmbErrorSuccess == err )
-                 //&& NULL == m_Image )
+            if (VmbErrorSuccess == err && NULL != m_Image)
             {
-                m_Image.Destroy();
-
-                m_Image.Create(  m_ApiController.GetWidth(),
-                                -m_ApiController.GetHeight(),
-                                NUM_COLORS * BIT_DEPTH );
+                m_Image.Create(m_ApiController.GetWidth(), -m_ApiController.GetHeight(), NUM_COLORS * BIT_DEPTH);
                 m_ClearBackground = true;
             }
-            Log( _TEXT( "Starting Acquisition" ), err );
+            Log(_TEXT("Starting Acquisition"), err);
             m_bIsStreaming = VmbErrorSuccess == err;
         }
         else
         {
-            Log( _TEXT( "Please select a camera." ) );
+            Log(_TEXT("Please select a camera."));
         }
     }
     else
@@ -186,13 +181,13 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
 		// The waiting frame is coming now ...
 		m_bWaitingFrame = false;
 
+        VmbUint64_t iFrameID = lParam;
+
         // See if it is not corrupt
         if( VmbFrameStatusComplete == status )
         {
-            VmbUchar_t *pBuffer;
-            VmbUchar_t *pColorBuffer = NULL;
-            VmbUint64_t iFrameID = lParam;
             Log(_TEXT("Received image, frame id "), iFrameID);
+            TRACE("+++++++> Received image, frame id %08ld, sw click count %ld\n", iFrameID, m_nClickCount);
 
             // Display it
             RECT rect;
@@ -203,7 +198,8 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
         else
         {
             // If we receive an incomplete image we do nothing but logging
-            Log( _TEXT( "Failure in receiving image" ), VmbErrorOther );
+            Log(_TEXT("Failure in receiving image id "), iFrameID);
+            TRACE("-------> Failure in receiving image, frame id %08ld, sw click count %ld\n", iFrameID, m_nClickCount);
         } 
         
     }
@@ -445,7 +441,7 @@ void CAsynchronousGrabDlg::OnPaint()
     {
         CDialog::OnPaint();
 
-        if( NULL != m_Image )
+        if (NULL != m_Image && m_bIsStreaming)
         {
             CPaintDC dc( &m_PictureBoxStream );
             CRect rect;
@@ -548,7 +544,8 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSwTriggerAuto()
 { 
 	if (m_CaptureTimer == 0) {
 		Log(_TEXT("Start software trigger automatically ...")); 
-		m_CaptureTimer = SetTimer(1, 1000, NULL); // one event every 1000 ms = 1 s 
+		m_CaptureTimer = SetTimer(1, 200, NULL); // one event every 1000 ms = 1 s 
+
 		m_BtnSWTriggerAuto.SetWindowText(_TEXT("Stop SW Trigger Auto"));
 	} 
 	else

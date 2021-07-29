@@ -142,7 +142,9 @@ bool FrameObserver::GetCImage(CImage* pOutImage)
 
     //newImage = m_Image;
     // https://stackoverflow.com/questions/9571304/how-to-copy-a-cimage-object
-    m_Image.BitBlt(pOutImage->GetDC(), 0, 0); 
+    //m_Image.BitBlt(pOutImage->GetDC(), 0, 0); 
+
+    memcpy(pOutImage->GetBits(), m_Image.GetBits(), m_Image.GetPitch() * m_Image.GetHeight());
 
     // Unlock the frame queue
     m_FramesMutex.Unlock();
