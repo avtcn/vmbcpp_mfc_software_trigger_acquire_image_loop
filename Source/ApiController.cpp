@@ -274,6 +274,10 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
             res = pCommandFeature->SetValue("FrameStart");
             ASSERT(res == VmbErrorSuccess);
 
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSource", pCommandFeature);
+            res = pCommandFeature->SetValue("Freerun");
+            ASSERT(res == VmbErrorSuccess);
+
             SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerMode", pCommandFeature);
             res = pCommandFeature->SetValue("Off");
             ASSERT(res == VmbErrorSuccess);
@@ -284,6 +288,10 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
         {
             SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSelector", pCommandFeature);
             res = pCommandFeature->SetValue("FrameStart");
+            ASSERT(res == VmbErrorSuccess);
+
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSource", pCommandFeature);
+            res = pCommandFeature->SetValue("Software");
             ASSERT(res == VmbErrorSuccess);
 
             SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerMode", pCommandFeature);
