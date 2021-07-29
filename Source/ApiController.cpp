@@ -268,9 +268,19 @@ VmbErrorType ApiController::StartContinuousImageAcquisition(const std::string& r
             }
         }
 
+        if (type == 0)
+        {
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSelector", pCommandFeature);
+            res = pCommandFeature->SetValue("FrameStart");
+            ASSERT(res == VmbErrorSuccess);
+
+            SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerMode", pCommandFeature);
+            res = pCommandFeature->SetValue("Off");
+            ASSERT(res == VmbErrorSuccess);
+        }
 
         // Software Trigger mode
-        if (type == 1)
+        else if (type == 1)
         {
             SP_ACCESS(m_pCamera)->GetFeatureByName("TriggerSelector", pCommandFeature);
             res = pCommandFeature->SetValue("FrameStart");

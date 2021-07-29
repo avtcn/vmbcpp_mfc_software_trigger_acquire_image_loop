@@ -126,7 +126,7 @@ void CAsynchronousGrabDlg::OnBnClickedButtonStartstop()
             // Start acquisition
             err = m_ApiController.StartContinuousImageAcquisition( m_cameras[nRow] );
             // Set up image for MFC picture box
-            if (VmbErrorSuccess == err && NULL != m_Image)
+            if (VmbErrorSuccess == err )
             {
                 m_Image.Create(m_ApiController.GetWidth(), -m_ApiController.GetHeight(), NUM_COLORS * BIT_DEPTH);
                 m_ClearBackground = true;
@@ -178,6 +178,9 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
         // Pick up frame
         bool ret = m_ApiController.GetCImage(&m_Image);
 
+        ticksEnd = GetTickCount();
+        double fps = lParam * 1.0 / ((ticksEnd - ticksStart) / 1000);
+
 		// The waiting frame is coming now ...
 		m_bWaitingFrame = false;
 
@@ -187,7 +190,7 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
         if( VmbFrameStatusComplete == status )
         {
             Log(_TEXT("Received image, frame id "), iFrameID);
-            TRACE("+++++++> Received image, frame id %08ld, sw click count %ld\n", iFrameID, m_nClickCount);
+            TRACE("+++++++> Received image, frame id %08lld, sw click count %ld, fps %f\n", iFrameID, m_nClickCount, fps);
 
             // Display it
             RECT rect;
@@ -199,7 +202,7 @@ LRESULT CAsynchronousGrabDlg::OnFrameReady( WPARAM status, LPARAM lParam )
         {
             // If we receive an incomplete image we do nothing but logging
             Log(_TEXT("Failure in receiving image id "), iFrameID);
-            TRACE("-------> Failure in receiving image, frame id %08ld, sw click count %ld\n", iFrameID, m_nClickCount);
+            TRACE("-------> Failure in receiving image, frame id %08lld, sw click count %ld, fps %f\n", iFrameID, m_nClickCount, fps);
         } 
         
     }
@@ -544,9 +547,12 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSwTriggerAuto()
 { 
 	if (m_CaptureTimer == 0) {
 		Log(_TEXT("Start software trigger automatically ...")); 
-		m_CaptureTimer = SetTimer(1, 200, NULL); // one event every 1000 ms = 1 s 
+
+		m_CaptureTimer = SetTimer(1, 1000/35, NULL); // one event every 1000 ms = 1 s 
 
 		m_BtnSWTriggerAuto.SetWindowText(_TEXT("Stop SW Trigger Auto"));
+
+        ticksStart = GetTickCount();
 	} 
 	else
 	{

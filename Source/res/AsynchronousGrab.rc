@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 德语(德国) resources
+// German (Germany) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
@@ -76,7 +76,7 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "AsynchronousGrab (MFC version)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Start Image Acquisition (Free Run)",IDC_BUTTON_STARTSTOP,7,84,144,14
+    PUSHBUTTON      "Start Image Acquisition (Free Run)",IDC_BUTTON_STARTSTOP,7,84,144,14,NOT WS_VISIBLE | WS_DISABLED
     LISTBOX         IDC_LIST_CAMERAS,7,7,144,63,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LISTBOX         IDC_LIST_LOG,7,332,601,100,LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "",IDC_PICTURE_STREAM,"Static",SS_BLACKFRAME,158,7,450,323
@@ -162,7 +162,7 @@ BEGIN
     0
 END
 
-#endif    // 德语(德国) resources
+#endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
