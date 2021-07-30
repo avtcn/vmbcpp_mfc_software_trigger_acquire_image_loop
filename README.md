@@ -5,8 +5,11 @@ Specially, Alvium 1800 U-500c, Manta G895B passed the test.
 
 
 ## Vimba SDK
-Vimba 4.0 C++ code based on example:
-`C:\Users\Public\Documents\Allied Vision\Vimba_4.0\VimbaCPP_Examples\SynchronousGrab\MFC`
+Vimba 5.0 C++ code based on example:
+`C:\Users\Public\Documents\Allied Vision\Vimba_5.0\VimbaCPP_Examples\SynchronousGrab\MFC`
+
+## 编译方法
+本例程使用Vimba 5.0，其它版本也可以，但是需要修改`AsynchronousGrabMFC.vcxproj`中所有`5.0`为本地对应vimba 版本号，例如`4.2`等。
 
 ## Screenshot
 ### 同步软件触发采集
