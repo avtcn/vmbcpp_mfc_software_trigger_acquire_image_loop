@@ -483,7 +483,11 @@ void CAsynchronousGrabDlg::OnBnClickedButtonOpenCamera()
                 m_Image.Create(  m_ApiController.GetWidth(),
                                 -m_ApiController.GetHeight(),
                                 NUM_COLORS * BIT_DEPTH );
-                m_ClearBackground = true;
+                m_ClearBackground = true; 
+
+                // If open the camera successfully, just disable the button
+                CButton* m_ctlOpenCamera = (CButton*)GetDlgItem(IDC_BUTTON_OPEN_CAMERA);
+                m_ctlOpenCamera->EnableWindow(0);
             }
             Log( _TEXT( "Starting Acquisition in Software trigger mode" ), err );
             m_bIsStreaming = VmbErrorSuccess == err;

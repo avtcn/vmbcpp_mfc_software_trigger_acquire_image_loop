@@ -73,7 +73,7 @@ IDR_MAINFRAME           ICON                    "AsynchronousGrab.ico"
 IDD_ASYNCHRONOUSGRAB_DIALOG DIALOGEX 0, 0, 615, 439
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "AsynchronousGrab (MFC version)"
+CAPTION "AsynchronousGrab (MFC version) - Software Trigger Mode"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     PUSHBUTTON      "Start Image Acquisition (Free Run)",IDC_BUTTON_STARTSTOP,7,84,144,14,NOT WS_VISIBLE | WS_DISABLED
