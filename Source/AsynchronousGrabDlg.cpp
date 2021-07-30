@@ -548,7 +548,8 @@ void CAsynchronousGrabDlg::OnBnClickedButtonSwTriggerAuto()
 	if (m_CaptureTimer == 0) {
 		Log(_TEXT("Start software trigger automatically ...")); 
 
-        float fps = 10.0;
+        // Set software trigger frequency
+        float fps = 2.0;
 		m_CaptureTimer = SetTimer(1, 1000/fps, NULL); // one event every 1000 ms = 1 s 
 
 		m_BtnSWTriggerAuto.SetWindowText(_TEXT("Stop SW Trigger Auto"));
